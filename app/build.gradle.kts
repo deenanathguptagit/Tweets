@@ -61,4 +61,16 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+//    implementation(libs.hilt.compose.navigation)
+    implementation(libs.compose.navigation)
+
+    //viewmodel
+    implementation(libs.androidx.viewmodel.ktx)
+    implementation(libs.androidx.viewmodel.compose)
+
+    //retrofit
+    implementation(libs.retrofit.core)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
 }
