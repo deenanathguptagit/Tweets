@@ -61,7 +61,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-//    implementation(libs.hilt.compose.navigation)
+    implementation(libs.hilt.compose.navigation)
     implementation(libs.compose.navigation)
 
     //viewmodel
