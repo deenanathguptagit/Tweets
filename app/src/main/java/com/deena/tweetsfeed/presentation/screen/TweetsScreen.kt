@@ -2,7 +2,7 @@ package com.deena.tweetsfeed.presentation.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deena.tweetsfeed.data.model.Tweet
+import com.deena.tweetsfeed.presentation.viewmodel.TweetsEvent
 import com.deena.tweetsfeed.presentation.viewmodel.TweetsViewModel
 
 @Composable
@@ -56,7 +57,7 @@ fun TweetsScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Button(
-                        onClick = { viewModel.retryGetTweets() }
+                        onClick = { viewModel.onEvent(TweetsEvent.RetryLoadTweets) }
                     ) {
                         Text("Retry")
                     }
@@ -67,8 +68,12 @@ fun TweetsScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.tweets) { tweet ->
-                        TweetItem(tweet = tweet)
+                    itemsIndexed(uiState.tweets) { index, tweet ->
+                        TweetItem(
+                            tweet = tweet,
+                            onLikeClick = { viewModel.onEvent(TweetsEvent.LikeTweet(index)) },
+                            onRetweetClick = { viewModel.onEvent(TweetsEvent.RetweetTweet(index)) }
+                        )
                     }
                 }
             }
@@ -77,7 +82,11 @@ fun TweetsScreen(
 }
 
 @Composable
-fun TweetItem(tweet: Tweet) {
+fun TweetItem(
+    tweet: Tweet,
+    onLikeClick: () -> Unit,
+    onRetweetClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -116,14 +125,22 @@ fun TweetItem(tweet: Tweet) {
                     .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = "❤️ ${tweet.likes}",
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = "🔄 ${tweet.retweets}",
-                    fontSize = 12.sp
-                )
+                TextButton(
+                    onClick = onLikeClick
+                ) {
+                    Text(
+                        text = "❤️ ${tweet.likes}",
+                        fontSize = 12.sp
+                    )
+                }
+                TextButton(
+                    onClick = onRetweetClick
+                ) {
+                    Text(
+                        text = "🔄 ${tweet.retweets}",
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }

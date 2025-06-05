@@ -19,6 +19,14 @@ data class TweetsUiState(
     val isRefreshing: Boolean = false
 )
 
+sealed class TweetsEvent {
+    object LoadTweets : TweetsEvent()
+    object RetryLoadTweets : TweetsEvent()
+    object RefreshTweets : TweetsEvent()
+    data class LikeTweet(val tweetIndex: Int) : TweetsEvent()
+    data class RetweetTweet(val tweetIndex: Int) : TweetsEvent()
+}
+
 @HiltViewModel
 class TweetsViewModel @Inject constructor(
     private val getTweetsUseCase: GetTweetsUseCase
@@ -28,10 +36,34 @@ class TweetsViewModel @Inject constructor(
     val uiState: StateFlow<TweetsUiState> = _uiState.asStateFlow()
 
     init {
-        getTweets()
+        onEvent(TweetsEvent.LoadTweets)
     }
 
-    fun getTweets() {
+    fun onEvent(event: TweetsEvent) {
+        when (event) {
+            is TweetsEvent.LoadTweets -> {
+                getTweets()
+            }
+
+            is TweetsEvent.RetryLoadTweets -> {
+                retryGetTweets()
+            }
+
+            is TweetsEvent.RefreshTweets -> {
+                refreshTweets()
+            }
+
+            is TweetsEvent.LikeTweet -> {
+                likeTweet(event.tweetIndex)
+            }
+
+            is TweetsEvent.RetweetTweet -> {
+                retweetTweet(event.tweetIndex)
+            }
+        }
+    }
+
+    private fun getTweets() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
@@ -42,14 +74,12 @@ class TweetsViewModel @Inject constructor(
                         tweets = result.data?.tweets ?: emptyList()
                     )
                 }
-
                 is Resource.Error -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = result.message
                     )
                 }
-
                 is Resource.Loading -> {
                     _uiState.value = _uiState.value.copy(isLoading = true)
                 }
@@ -57,7 +87,51 @@ class TweetsViewModel @Inject constructor(
         }
     }
 
-    fun retryGetTweets() {
+    private fun retryGetTweets() {
         getTweets()
+    }
+
+    private fun refreshTweets() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isRefreshing = true, errorMessage = null)
+
+            when (val result = getTweetsUseCase()) {
+                is Resource.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        isRefreshing = false,
+                        tweets = result.data?.tweets ?: emptyList()
+                    )
+                }
+
+                is Resource.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isRefreshing = false,
+                        errorMessage = result.message
+                    )
+                }
+
+                is Resource.Loading -> {
+                    _uiState.value = _uiState.value.copy(isRefreshing = true)
+                }
+            }
+        }
+    }
+
+    private fun likeTweet(tweetIndex: Int) {
+        val currentTweets = _uiState.value.tweets.toMutableList()
+        if (tweetIndex in currentTweets.indices) {
+            val tweet = currentTweets[tweetIndex]
+            currentTweets[tweetIndex] = tweet.copy(likes = tweet.likes + 1)
+            _uiState.value = _uiState.value.copy(tweets = currentTweets)
+        }
+    }
+
+    private fun retweetTweet(tweetIndex: Int) {
+        val currentTweets = _uiState.value.tweets.toMutableList()
+        if (tweetIndex in currentTweets.indices) {
+            val tweet = currentTweets[tweetIndex]
+            currentTweets[tweetIndex] = tweet.copy(retweets = tweet.retweets + 1)
+            _uiState.value = _uiState.value.copy(tweets = currentTweets)
+        }
     }
 }
