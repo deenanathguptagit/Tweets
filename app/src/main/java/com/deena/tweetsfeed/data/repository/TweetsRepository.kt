@@ -5,4 +5,5 @@ import com.deena.tweetsfeed.utils.Resource
 
 interface TweetsRepository {
     suspend fun getTweets(): Resource<TweetList>
+    suspend fun getCategoryTweets(): Resource<List<String>>
 }

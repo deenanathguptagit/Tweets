@@ -14,14 +14,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.deena.tweetsfeed.data.model.Tweet
 import com.deena.tweetsfeed.presentation.viewmodel.TweetsViewModel
-import com.deena.tweetsfeed.utils.Resource
 
 @Composable
 fun TweetsScreen(
     modifier: Modifier = Modifier,
     viewModel: TweetsViewModel = hiltViewModel()
 ) {
-    val tweetsState by viewModel.tweetsState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -35,8 +34,8 @@ fun TweetsScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        when (tweetsState) {
-            is Resource.Loading -> {
+        when {
+            uiState.isLoading -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -45,24 +44,14 @@ fun TweetsScreen(
                 }
             }
 
-            is Resource.Success -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(tweetsState.data?.tweets ?: emptyList()) { tweet ->
-                        TweetItem(tweet = tweet)
-                    }
-                }
-            }
-
-            is Resource.Error -> {
+            uiState.errorMessage != null -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Error: ${tweetsState.message}",
+                        text = "Error: ${uiState.errorMessage}",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
@@ -70,6 +59,16 @@ fun TweetsScreen(
                         onClick = { viewModel.retryGetTweets() }
                     ) {
                         Text("Retry")
+                    }
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(uiState.tweets) { tweet ->
+                        TweetItem(tweet = tweet)
                     }
                 }
             }

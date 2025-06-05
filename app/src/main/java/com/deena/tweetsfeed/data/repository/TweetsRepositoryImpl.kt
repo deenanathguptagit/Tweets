@@ -14,9 +14,17 @@ class TweetsRepositoryImpl @Inject constructor(
 
     override suspend fun getTweets(): Resource<TweetList> {
         return safeApiCallWithValidation(
-            apiCall = { apiService.getTweets() },
+            apiCall = { apiService.getTweets("") },
             validation = { tweetList -> tweetList.tweets.isNotEmpty() },
             emptyDataMessage = "No tweets available"
+        )
+    }
+
+    override suspend fun getCategoryTweets(): Resource<List<String>> {
+        return safeApiCallWithValidation(
+            apiCall = { apiService.getCategoryTweets() },
+            validation = { tweetCategory -> tweetCategory.isNotEmpty() },
+            emptyDataMessage = "No tweets categories available"
         )
     }
 }
