@@ -11,8 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.deena.tweetsfeed.presentation.screen.TweetsScreen
 import com.deena.tweetsfeed.ui.theme.TweetsFeedTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,8 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TweetsFeedTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    TweetsScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

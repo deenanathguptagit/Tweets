@@ -70,6 +70,7 @@ dependencies {
 
     //retrofit
     implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
