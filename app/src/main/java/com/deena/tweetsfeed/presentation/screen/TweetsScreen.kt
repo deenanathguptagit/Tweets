@@ -22,6 +22,7 @@ fun TweetsScreen(
     viewModel: TweetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val onEvent = viewModel::onEvent
 
     Column(
         modifier = modifier
@@ -57,7 +58,7 @@ fun TweetsScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Button(
-                        onClick = { viewModel.onEvent(TweetsEvent.RetryLoadTweets) }
+                        onClick = { onEvent(TweetsEvent.RetryLoadTweets) }
                     ) {
                         Text("Retry")
                     }
@@ -71,8 +72,8 @@ fun TweetsScreen(
                     itemsIndexed(uiState.tweets) { index, tweet ->
                         TweetItem(
                             tweet = tweet,
-                            onLikeClick = { viewModel.onEvent(TweetsEvent.LikeTweet(index)) },
-                            onRetweetClick = { viewModel.onEvent(TweetsEvent.RetweetTweet(index)) }
+                            onLikeClick = { onEvent(TweetsEvent.LikeTweet(index)) },
+                            onRetweetClick = { onEvent(TweetsEvent.RetweetTweet(index)) }
                         )
                     }
                 }
