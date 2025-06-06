@@ -20,15 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.deena.tweetsfeed.presentation.viewmodel.CategoriesEvent
-import com.deena.tweetsfeed.presentation.viewmodel.CategoriesViewModel
+import com.deena.tweetsfeed.presentation.viewmodel.TweetsViewModel
+import com.deena.tweetsfeed.presentation.viewmodel.TweetsEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriesScreen(
     onCategoryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: CategoriesViewModel = hiltViewModel()
+    viewModel: TweetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -43,7 +43,7 @@ fun CategoriesScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = { viewModel.onEvent(CategoriesEvent.RetryLoadCategories) }
+                        onClick = { viewModel.onEvent(TweetsEvent.RetryLoadCategories) }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
@@ -60,13 +60,13 @@ fun CategoriesScreen(
                 .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading -> {
+                uiState.categoriesLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
 
-                uiState.errorMessage != null -> {
+                uiState.categoriesError != null -> {
                     Column(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -74,13 +74,13 @@ fun CategoriesScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = uiState.errorMessage ?: "Unknown error",
+                            text = uiState.categoriesError ?: "Unknown error",
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = { viewModel.onEvent(CategoriesEvent.RetryLoadCategories) }
+                            onClick = { viewModel.onEvent(TweetsEvent.RetryLoadCategories) }
                         ) {
                             Text("Retry")
                         }

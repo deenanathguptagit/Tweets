@@ -1,7 +1,6 @@
 package com.deena.tweetsfeed.data.network
 
 import com.deena.tweetsfeed.data.model.Tweet
-import com.deena.tweetsfeed.data.model.TweetList
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header
