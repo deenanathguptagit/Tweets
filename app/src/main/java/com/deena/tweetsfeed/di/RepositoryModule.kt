@@ -1,7 +1,7 @@
 package com.deena.tweetsfeed.di
 
-import com.deena.tweetsfeed.data.repository.TweetsRepository
 import com.deena.tweetsfeed.data.repository.TweetsRepositoryImpl
+import com.deena.tweetsfeed.domain.repository.TweetsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

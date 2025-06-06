@@ -20,11 +20,11 @@ data class TweetsUiState(
 )
 
 sealed class TweetsEvent {
-    object LoadTweets : TweetsEvent()
-    object RetryLoadTweets : TweetsEvent()
+    data class RetryLoadTweets(val category: String) : TweetsEvent()
     object RefreshTweets : TweetsEvent()
     data class LikeTweet(val tweetIndex: Int) : TweetsEvent()
     data class RetweetTweet(val tweetIndex: Int) : TweetsEvent()
+    data class LoadTweetsByCategory(val category: String) : TweetsEvent()
 }
 
 @HiltViewModel
@@ -35,18 +35,10 @@ class TweetsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TweetsUiState(isLoading = true))
     val uiState: StateFlow<TweetsUiState> = _uiState.asStateFlow()
 
-    init {
-        onEvent(TweetsEvent.LoadTweets)
-    }
-
     fun onEvent(event: TweetsEvent) {
         when (event) {
-            is TweetsEvent.LoadTweets -> {
-                getTweets()
-            }
-
             is TweetsEvent.RetryLoadTweets -> {
-                retryGetTweets()
+                retryGetTweets(event.category)
             }
 
             is TweetsEvent.RefreshTweets -> {
@@ -60,18 +52,22 @@ class TweetsViewModel @Inject constructor(
             is TweetsEvent.RetweetTweet -> {
                 retweetTweet(event.tweetIndex)
             }
+
+            is TweetsEvent.LoadTweetsByCategory -> {
+                getTweetsByCategory(event.category)
+            }
         }
     }
 
-    private fun getTweets() {
+    private fun getTweets(category: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
-            when (val result = getTweetsUseCase()) {
+            when (val result = getTweetsUseCase(category)) {
                 is Resource.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        tweets = result.data?.tweets ?: emptyList()
+                        tweets = result.data ?: emptyList()
                     )
                 }
                 is Resource.Error -> {
@@ -87,19 +83,45 @@ class TweetsViewModel @Inject constructor(
         }
     }
 
-    private fun retryGetTweets() {
-        getTweets()
+    private fun getTweetsByCategory(category: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+
+            when (val result = getTweetsUseCase(category)) {
+                is Resource.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        tweets = result.data ?: emptyList()
+                    )
+                }
+
+                is Resource.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = result.message
+                    )
+                }
+
+                is Resource.Loading -> {
+                    _uiState.value = _uiState.value.copy(isLoading = true)
+                }
+            }
+        }
+    }
+
+    private fun retryGetTweets(category: String) {
+        getTweets(category)
     }
 
     private fun refreshTweets() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isRefreshing = true, errorMessage = null)
 
-            when (val result = getTweetsUseCase()) {
+            when (val result = getTweetsUseCase("")) {
                 is Resource.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isRefreshing = false,
-                        tweets = result.data?.tweets ?: emptyList()
+                        tweets = result.data ?: emptyList()
                     )
                 }
 

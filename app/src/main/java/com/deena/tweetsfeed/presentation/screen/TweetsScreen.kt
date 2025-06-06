@@ -18,23 +18,41 @@ import com.deena.tweetsfeed.presentation.viewmodel.TweetsViewModel
 
 @Composable
 fun TweetsScreen(
+    category: String,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TweetsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val onEvent = viewModel::onEvent
 
+    LaunchedEffect(category) {
+        onEvent(TweetsEvent.LoadTweetsByCategory(category))
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = "Tweets Feed",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(
+                onClick = onBackClick
+            ) {
+                Text("← Back")
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "$category Tweets",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         when {
             uiState.isLoading -> {
@@ -53,15 +71,28 @@ fun TweetsScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Error: ${uiState.errorMessage}",
+                        text = "Error: ${uiState.errorMessage ?: "Unknown error"}",
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Button(
-                        onClick = { onEvent(TweetsEvent.RetryLoadTweets) }
+                        onClick = { onEvent(TweetsEvent.RetryLoadTweets(category)) }
                     ) {
                         Text("Retry")
                     }
+                }
+            }
+
+            uiState.tweets.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No tweets found for $category",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
 
