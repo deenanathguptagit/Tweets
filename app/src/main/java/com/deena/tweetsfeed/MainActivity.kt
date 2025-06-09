@@ -13,10 +13,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.deena.tweetsfeed.presentation.screen.CategoriesScreen
 import com.deena.tweetsfeed.presentation.screen.TweetsScreen
 import com.deena.tweetsfeed.ui.theme.TweetsFeedTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -35,6 +37,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Serializable
+object CategoriesRoute
+
+@Serializable
+data class TweetsRoute(val category: String)
+
 @Composable
 fun TweetsFeedNavigation(
     modifier: Modifier = Modifier,
@@ -42,21 +50,21 @@ fun TweetsFeedNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "categories",
+        startDestination = CategoriesRoute,
         modifier = modifier
     ) {
-        composable("categories") {
+        composable<CategoriesRoute> {
             CategoriesScreen(
                 onCategoryClick = { category ->
-                    navController.navigate("tweets/$category")
+                    navController.navigate(TweetsRoute(category))
                 }
             )
         }
 
-        composable("tweets/{category}") { backStackEntry ->
-            val category = backStackEntry.arguments?.getString("category") ?: ""
+        composable<TweetsRoute> { backStackEntry ->
+            val tweetsRoute = backStackEntry.toRoute<TweetsRoute>()
             TweetsScreen(
-                category = category,
+                category = tweetsRoute.category,
                 onBackClick = {
                     navController.popBackStack()
                 }
