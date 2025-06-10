@@ -7,12 +7,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.deena.tweetsfeed.presentation.screen.CategoriesScreen
+import com.deena.tweetsfeed.presentation.screen.TweetsScreen
 import com.deena.tweetsfeed.ui.theme.TweetsFeedTheme
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,8 +28,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             TweetsFeedTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    TweetsFeedNavigation(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -30,18 +37,38 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+@Serializable
+object CategoriesRoute
 
-@Preview(showBackground = true)
+@Serializable
+data class TweetsRoute(val category: String)
+
 @Composable
-fun GreetingPreview() {
-    TweetsFeedTheme {
-        Greeting("Android")
+fun TweetsFeedNavigation(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController()
+) {
+    NavHost(
+        navController = navController,
+        startDestination = CategoriesRoute,
+        modifier = modifier
+    ) {
+        composable<CategoriesRoute> {
+            CategoriesScreen(
+                onCategoryClick = { category ->
+                    navController.navigate(TweetsRoute(category))
+                }
+            )
+        }
+
+        composable<TweetsRoute> { backStackEntry ->
+            val tweetsRoute = backStackEntry.toRoute<TweetsRoute>()
+            TweetsScreen(
+                category = tweetsRoute.category,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
