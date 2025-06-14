@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("kapt")
     alias(libs.plugins.hilt.plugin)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -74,4 +75,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+
+    implementation(libs.data.store)
+    implementation(libs.room.database.runtime)
+    ksp(libs.room.database.compiler)
 }
