@@ -5,6 +5,7 @@ plugins {
     kotlin("kapt")
     alias(libs.plugins.hilt.plugin)
     alias(libs.plugins.devtools.ksp)
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -31,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
@@ -79,4 +80,8 @@ dependencies {
     implementation(libs.data.store)
     implementation(libs.room.database.runtime)
     ksp(libs.room.database.compiler)
+
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.mokito.core)
+    testImplementation(libs.mokito.kotlin)
 }
